@@ -1,41 +1,45 @@
+/**
+ * Main application entry point
+ */
 const express = require('express');
-require('dotenv').config();
+const config = require('./config');
+const routes = require('./routes');
+const db = require('./models/db');
+const redis = require('./models/redis');
+const logger = require('./middleware/logger');
+const mermaidflowRoutes = require('./routes/mermaidflow');
 
 // Create Express app
 const app = express();
-const port = process.env.PORT || 3000;
+const port = config.server.port;
 
-// Customer ID from environment variables
-const customerId = process.env.CUSTOMER_ID || 'development';
+// Customer ID identification
+console.log(`Starting application for customer: ${config.customer.id}`);
+console.log(`Environment: ${config.server.env}`);
 
 // Middleware
 app.use(express.json());
+app.use(logger);
 
-// Routes
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Docker SaaS Pipeline API',
-    customer: customerId,
-    environment: process.env.NODE_ENV
-  });
-});
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).send('ok');
-});
-
-// Customer-specific endpoint
-app.get('/api/customer', (req, res) => {
-  res.json({
-    id: customerId,
-    name: `Customer ${customerId}`,
-    created: new Date().toISOString()
-  });
-});
+// Register routes
+app.use('/', routes);
+app.use('/api/mermaidflow', mermaidflowRoutes);
 
 // Start the server
-app.listen(port, () => {
-  console.log(`Server running for customer ${customerId} on port ${port}`);
-  console.log(`Environment: ${process.env.NODE_ENV}`);
+const server = app.listen(port, async () => {
+  console.log(`Server running on port ${port}`);
+  
+  // Test database connection
+  await db.testConnection();
+  
+  // Redis connection is handled in the module initialization
+});
+
+// Handle graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
 }); 

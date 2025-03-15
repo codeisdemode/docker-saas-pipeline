@@ -14,14 +14,17 @@ services:
       - ./src:/app/src
       - ./public:/app/public
       - node_modules:/app/node_modules
+      - ./docs:/app/docs
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgres://postgres:postgres@db:5432/app_dev
       - REDIS_URL=redis://redis:6379
       - CUSTOMER_ID=development
+      - MERMAIDFLOW_URL=http://mermaidflow:5000
     depends_on:
       - db
       - redis
+      - mermaidflow
     restart: unless-stopped
 
   # Database service
@@ -57,7 +60,41 @@ services:
       - ./public:/app/public
     depends_on:
       - app
+      - mermaidflow
     restart: unless-stopped
+    
+  # MermaidFlow service
+  mermaidflow:
+    build:
+      context: .
+      dockerfile: docker/mermaidflow/Dockerfile
+    ports:
+      - "5000:5000"  # MCP Server
+      - "8000:8000"  # FastAPI server (if needed)
+    volumes:
+      - ./projects/example:/app
+      - ./docs:/app/docs
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - DATABASE_URL=postgres://mermaidflow:mermaidflow_password@db:5432/mermaidflow
+      - HOST=0.0.0.0
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  # New documentation service
+  docs:
+    build:
+      context: .
+      dockerfile: docker/docs/Dockerfile
+    ports:
+      - "8080:8000"
+    volumes:
+      - ./docs:/docs
+    depends_on:
+      - app
 
 volumes:
   postgres_data:

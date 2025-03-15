@@ -1,37 +1,47 @@
-# Node.js
+# Node.js dependencies
 node_modules/
-npm-debug.log
-yarn-debug.log
-yarn-error.log
-.pnpm-debug.log
-
-# Docker
-.docker/
 
 # Environment variables
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
-*.env
+.env.development
+.env.test
+.env.production
 
-# Build artifacts
+# Build outputs
 dist/
 build/
-*.zip
-*.tar.gz
+.next/
 
 # Logs
 logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Editor directories and files
 .idea/
 .vscode/
 *.swp
 *.swo
+
+# OS generated files
 .DS_Store
+Thumbs.db
+
+# Ignore the example project directory which is a separate git repository
+projects/example/
+
+# Docker
+.docker/
+
+# Build artifacts
+*.zip
+*.tar.gz
+
+# Docker
+.pnpm-debug.log
 
 # Terraform
 .terraform/
@@ -49,4 +59,7 @@ coverage/
 # Local data volumes
 data/
 postgres_data/
-redis_data/ 
+redis_data/
+
+# Editor directories and files
+*.env
